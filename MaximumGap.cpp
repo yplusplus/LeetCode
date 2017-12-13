@@ -1,37 +1,28 @@
 class Solution {
-public:
-    int maximumGap(vector<int>& nums) {
-        if (nums.size() < 2) return 0;
-        
-        int min_num = nums[0];
-        int max_num = nums[0];
-        for (int i = 0; i < nums.size(); i++) {
-            if (nums[i] < min_num) min_num = nums[i];
-            if (nums[i] > max_num) max_num = nums[i];
-        }
-        int bucket_size = (max_num - min_num) / ((int)nums.size() - 1);
-        if (bucket_size == 0) bucket_size = 1;
-        int bucket_num = (max_num - min_num) / bucket_size + 1;
-        
-        vector<int> bucket_min(bucket_num, -1);
-        vector<int> bucket_max(bucket_num, -1);
-        
-        for (int i = 0; i < nums.size(); i++) {
-            int x = nums[i];
-            int idx = (x - min_num) / bucket_size;
-            if (bucket_min[idx] == -1 || bucket_min[idx] > x) bucket_min[idx] = x;
-            if (bucket_max[idx] == -1 || bucket_max[idx] < x) bucket_max[idx] = x;
-        }
-        
-        int ans = 0;
-        int last_max = -1;
-        for (int i = 0; i < bucket_num; i++) {
-            if (bucket_min[i] == -1) continue; // skip empty bucket
-            if (last_max != -1) {
-                ans = max(ans, bucket_min[i] - last_max);
+    public:
+        int maximumGap(vector<int>& nums) {
+            if (nums.size() < 2) return 0;
+            if (nums.size() == 2) return abs(nums[0] - nums[1]);
+            int max_num = *max_element(nums.begin(), nums.end());
+            int min_num = *min_element(nums.begin(), nums.end());
+            int n = nums.size();
+            int k = max(1, (max_num - min_num) / (n - 1));
+            int buckets_num = (max_num - min_num) / k + 1;
+            vector<pair<int, int> > buckets(buckets_num, {-1, -1});
+            for (auto it = nums.begin(); it != nums.end(); it++) {
+                int idx = (*it - min_num) / k;
+                if (buckets[idx].first == -1 || buckets[idx].first > *it)
+                    buckets[idx].first = *it;
+                if (buckets[idx].second == -1 || buckets[idx].second < *it)
+                    buckets[idx].second = *it;
             }
-            last_max = bucket_max[i];
+            int prev = buckets[0].second;
+            int ans = 0;
+            for (int i = 1; i < buckets.size(); i++) {
+                if (buckets[i].first == -1) continue;
+                ans = max(ans, buckets[i].first - prev);
+                prev = buckets[i].second;
+            }
+            return ans;
         }
-        return ans;
-    }
 };
